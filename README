@@ -1,0 +1,23 @@
+Catalyst::Authentication::Credential::OpenID
+
+Just say "no" to document drift. See the POD for any details,
+including copyright and licence, beyond installation.
+
+
+INSTALLATION
+
+To install this module, run the following commands:
+
+	perl Makefile.PL
+	make
+	make test
+	make install
+
+It is recommended that you try to install with TEST_HTTP set to a true
+value in your environment. If it is set, the tests will run a forking
+test server which acts as an OpenID provider and consumer to run tests
+within a test Catalyst application. Failure here doesn't guarantee the
+module won't work for you but success pretty much guarantees it will
+work.
+
+
