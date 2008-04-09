@@ -1,15 +1,17 @@
 --- 
-abstract: OpenID credential for Catalyst::Authentication framework.
+abstract: OpenID credential for L<Catalyst::Plugin::Authentication> framework.
 author: 
   - ", Ashley Pond V C<< <ashley@cpan.org> >>. Some of"
 build_requires: 
   Catalyst::Plugin::Session::Store::FastMmap: 0
+  IO::Socket::INET: 0
   LWP::UserAgent: 0
+  Net::DNS: 0
   Net::OpenID::Server: 0
   Test::More: 0.42
   Test::WWW::Mechanize: 1.20
 distribution_type: module
-generated_by: Module::Install version 0.70
+generated_by: Module::Install version 0.68
 license: perl
 meta-spec: 
   url: http://module-build.sourceforge.net/META-spec-v1.3.html
@@ -30,4 +32,5 @@ requires:
   Crypt::DH: 0.05
   Net::OpenID::Consumer: 0.14
   UNIVERSAL::require: 0
-version: 0.01
+  parent: 0.2
+version: 0.02

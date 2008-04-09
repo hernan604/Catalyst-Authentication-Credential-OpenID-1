@@ -6,6 +6,7 @@ use inc::Module::Install;
 name            "Catalyst-Authentication-Credential-OpenID";
 all_from        "lib/Catalyst/Authentication/Credential/OpenID.pm";
 
+requires  "parent"                => "0.2";
 requires  "Class::Accessor::Fast" => 0;
 requires  "Catalyst::Runtime"     => "5.7";
 requires  "Crypt::DH"             => "0.05"; # IIRC OpenID stuff forgets to prereq this
@@ -23,6 +24,8 @@ build_requires  "Test::More"            => "0.42";
 build_requires  "Net::OpenID::Server"   => 0;
 build_requires  "Test::WWW::Mechanize"  => "1.20";
 build_requires  "Catalyst::Plugin::Session::Store::FastMmap" => 0;
+build_requires  "Net::DNS" => 0;
+build_requires  "IO::Socket::INET" => 0;
 
 auto_install;
 WriteAll;

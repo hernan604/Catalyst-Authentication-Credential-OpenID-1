@@ -1,5 +1,5 @@
 package Catalyst::Authentication::Credential::OpenID;
-use base "Class::Accessor::Fast";
+use parent "Class::Accessor::Fast";
 
 BEGIN {
     __PACKAGE__->mk_accessors(qw/ _config realm debug secret /);
@@ -9,7 +9,7 @@ use strict;
 use warnings;
 no warnings "uninitialized";
 
-our $VERSION = '0.01';
+our $VERSION = "0.02";
 
 use Net::OpenID::Consumer;
 use UNIVERSAL::require;
@@ -23,7 +23,7 @@ sub new : method {
                  };
     bless $self, $class;
 
-    # 2.0 "SHOULD"
+    # 2.0 spec says "SHOULD" be named "openid_identifier."
     $self->_config->{openid_field} ||= "openid_identifier";
 
     $self->debug( $self->_config->{debug} );
@@ -36,11 +36,13 @@ sub new : method {
 
     $secret = substr($secret,0,255) if length $secret > 255;
     $self->secret( $secret );
+    $self->_config->{ua_class} ||= "LWPx::ParanoidAgent";
 
     eval {
-        ( $self->_config->{ua_class} ||= "LWPx::ParanoidAgent" )->require;
+        $self->_config->{ua_class}->require;
     }
-    or Catalyst::Exception->throw("Could not 'require' user agent class " . $self->_config->{ua_class});
+    or Catalyst::Exception->throw("Could not 'require' user agent class " .
+                                  $self->_config->{ua_class});
 
     $c->log->debug("Setting consumer secret: " . $secret) if $self->debug;
 
@@ -63,7 +65,7 @@ sub authenticate : method {
     my $csr = Net::OpenID::Consumer->new(
         ua => $self->_config->{ua_class}->new(%{$self->_config->{ua_args} || {}}),
         args => $c->req->params,
-        consumer_secret => sub { $self->secret },
+        consumer_secret => $self->secret,
     );
 
     if ( $claimed_uri )
@@ -130,7 +132,7 @@ __END__
 
 =head1 NAME
 
-Catalyst::Authentication::Credential::OpenID - OpenID credential for Catalyst::Authentication framework.
+Catalyst::Authentication::Credential::OpenID - OpenID credential for L<Catalyst::Plugin::Authentication> framework.
 
 =head1 SYNOPSIS
 
@@ -150,8 +152,8 @@ Catalyst::Authentication::Credential::OpenID - OpenID credential for Catalyst::A
        credential:
          class: OpenID
 
-  # Root::openid().
-  sub openid : Local {
+ # Root::openid().
+ sub openid : Local {
       my($self, $c) = @_;
 
       if ( $c->authenticate() )
@@ -163,13 +165,13 @@ Catalyst::Authentication::Credential::OpenID - OpenID credential for Catalyst::A
       {
           # Present OpenID form.
       }
-  }
+ }
 
-  # openid.tt
-  <form action="[% c.uri_for('/openid') %]" method="GET" name="openid">
-  <input type="text" name="openid_identifier" class="openid" />
-  <input type="submit" value="Sign in with OpenID" />
-  </form>
+ # openid.tt
+ <form action="[% c.uri_for('/openid') %]" method="GET" name="openid">
+ <input type="text" name="openid_identifier" class="openid" />
+ <input type="submit" value="Sign in with OpenID" />
+ </form>
 
 
 =head1 DESCRIPTION
@@ -204,13 +206,6 @@ implementation.
 
 =over 4
 
-=item * Catalyst::Authentication::Credential::OpenID->new()
-
-You will never call this. Catalyst does it for you. The only important
-thing you might like to know about it is that it merges its realm
-configuration with its configuration proper. If this doesn't mean
-anything to you, don't worry.
-
 =item * $c->authenticate({},"your_openid_realm");
 
 Call to authenticate the user via OpenID. Returns false if
@@ -229,32 +224,38 @@ It implicitly does this (sort of, it checks the request method too)-
  my $claimed_uri = $c->req->params->{openid_identifier};
  $c->authenticate({openid_identifier => $claimed_uri});
 
-=back
+=item * Catalyst::Authentication::Credential::OpenID->new()
 
+You will never call this. Catalyst does it for you. The only important
+thing you might like to know about it is that it merges its realm
+configuration with its configuration proper. If this doesn't mean
+anything to you, don't worry.
+
+=back
 
 =head2 USER METHODS
 
 Currently the only supported user class is L<Catalyst::Plugin::Authentication::User::Hash>.
 
-=over 8
+=over 4
 
-=item url
+=item * $c->user->url
 
-=item display
+=item * $c->user->display
 
-=item rss
+=item * $c->user->rss 
 
-=item atom
+=item * $c->user->atom
 
-=item foaf
+=item * $c->user->foaf
 
-=item declared_rss
+=item * $c->user->declared_rss
 
-=item declared_atom
+=item * $c->user->declared_atom
 
-=item declared_foaf
+=item * $c->user->declared_foaf
 
-=item foafmaker
+=item * $c->user->foafmaker
 
 =back
 
@@ -293,6 +294,7 @@ clear text passwords and one called "openid" which uses... uh, OpenID.
                           }
               },
               openid => {
+                  consumer_secret => "Don't bother setting",
                   ua_class => "LWPx::ParanoidAgent",
                   ua_args => {
                       whitelisted_hosts => [qw/ 127.0.0.1 localhost /],
@@ -329,6 +331,7 @@ And now, the same configuration in YAML.
          class: OpenID
          store:
            class: OpenID
+       consumer_secret: Don't bother setting
        ua_class: LWPx::ParanoidAgent
        ua_args:
          whitelisted_hosts:
@@ -336,14 +339,33 @@ And now, the same configuration in YAML.
            - localhost
 
 B<NB>: There is no OpenID store yet. Trying for next release.
-L<LWPx::ParanoidAgent> is the default agent. You don't have to set it.
-I recommend that you do B<not> override it. You can with any well
-behaved L<LWP::UserAgent>. You probably should not.
+
+=head1 CONFIGURATION
+
+These are set in your realm. See above.
+
+=over 4
+
+=item * ua_args and ua_class
+
+L<LWPx::ParanoidAgent> is the default agent -- C<ua_class>. You don't
+have to set it. I recommend that you do B<not> override it. You can
+with any well behaved L<LWP::UserAgent>. You probably should not.
 L<LWPx::ParanoidAgent> buys you many defenses and extra security
 checks. When you allow your application users freedom to initiate
 external requests, you open a big avenue for DoS (denial of service)
 attacks. L<LWPx::ParanoidAgent> defends against this.
 L<LWP::UserAgent> and any regular subclass of it will not.
+
+=item * consumer_secret
+
+The underlying L<Net::OpenID::Consumer> object is seeded with a
+secret. If it's important to you to set your own, you can. The default
+uses this package name + its version + the sorted configuration keys
+of your Catalyst application (chopped at 255 characters if it's
+longer). This should generally be superior to any fixed string.
+
+=back
 
 
 =head1 TODO
@@ -356,8 +378,9 @@ OpenID end-point that is in the tests.
 Debug statements need to be both expanded and limited via realm
 configuration.
 
-Better diagnostics in errors.
+Better diagnostics in errors. Debug info at all consumer calls.
 
+Roles from provider domains? Mapped? Direct? A generic "openid" auto_role?
 
 =head1 LICENSE AND COPYRIGHT
 
@@ -391,6 +414,7 @@ failure of the software to operate with any other software), even if
 such holder or other party has been advised of the possibility of
 such damages.
 
+
 =head1 THANKS
 
 To Benjamin Trott, Tatsuhiko Miyagawa, and Brad Fitzpatrick for the
@@ -404,7 +428,8 @@ L<Net::OpenID::Consumer>, and L<LWPx::ParanoidAgent>.
 
 =head2 RELATED
 
-L<Net::OpenID::Server>, L<http://openid.net/>, and L<http://openid.net/developers/specs/>.
+L<Net::OpenID::Server>, L<Net::OpenID::VerifiedIdentity>,
+L<http://openid.net/>, and L<http://openid.net/developers/specs/>.
 
 L<Catalyst::Plugin::Authentication::OpenID> (Benjamin Trott) and L<Catalyst::Plugin::Authentication::Credential::OpenID> (Tatsuhiko Miyagawa).
 

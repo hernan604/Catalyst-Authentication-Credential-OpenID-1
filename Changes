@@ -1,4 +1,12 @@
 Revision history for Catalyst::Authentication::Credential::OpenID
 
+0.02  Tue Apr  8 22:18:22 PDT 2008
+      - Changed "use base" to "use parent."
+      - Moved SVN to Catalyst dev box.
+      - Took out left over toss copy of earlier Credential module.
+      - Took out weird closure over secret; not just sets it plainly.
+      - Put config stuff in POD a bit differently and added info on consumer_secret.
+      - POD tweaks.
+
 0.01  Sat Apr  5 21:35:25 PDT 2008
       - Initial release.
