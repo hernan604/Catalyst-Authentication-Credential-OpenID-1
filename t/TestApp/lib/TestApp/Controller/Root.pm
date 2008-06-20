@@ -10,14 +10,13 @@ __PACKAGE__->config->{namespace} = '';
 
 =head1 NAME
 
-TestApp::Controller::Root - Root Controller for TestApp
+TestApp::Controller::Root - Root Controller for TestApp.
 
 =head1 DESCRIPTION
 
-D'er... testing.
+D'er... testing. Has an OpenID provider to test the OpenID credential against.
 
 =cut
-
 
 sub provider : Local {
     my ( $self, $c, $username ) = @_;
@@ -103,7 +102,6 @@ sub login : Local {
     }
 }
 
-
 sub signin_openid : Local {
     my($self, $c) = @_;
 
@@ -142,7 +140,7 @@ sub end : Private {
 
 =head1 LICENSE
 
-This library is free software, you can redistribute it and/or modify
+This library is free software, you can redistribute it and modify
 it under the same terms as Perl itself.
 
 =cut

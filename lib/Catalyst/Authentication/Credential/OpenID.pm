@@ -1,15 +1,14 @@
 package Catalyst::Authentication::Credential::OpenID;
+use strict;
+use warnings;
+no warnings "uninitialized";
 use parent "Class::Accessor::Fast";
 
 BEGIN {
     __PACKAGE__->mk_accessors(qw/ _config realm debug secret /);
 }
 
-use strict;
-use warnings;
-no warnings "uninitialized";
-
-our $VERSION = "0.02";
+our $VERSION = "0.03";
 
 use Net::OpenID::Consumer;
 use UNIVERSAL::require;
@@ -118,25 +117,25 @@ sub authenticate : method {
                                        $csr->err);
         }
     }
-    else
-    {
-        return;
-    }
+    return;
 }
 
 1;
 
 __END__
 
-=pod
-
 =head1 NAME
 
 Catalyst::Authentication::Credential::OpenID - OpenID credential for L<Catalyst::Plugin::Authentication> framework.
 
+=head1 VERSION
+
+0.03
+
 =head1 SYNOPSIS
 
- # MyApp
+In MyApp.pm.
+
  use Catalyst qw/
     Authentication
     Session
@@ -144,15 +143,35 @@ Catalyst::Authentication::Credential::OpenID - OpenID credential for L<Catalyst:
     Session::State::Cookie
  /;
 
- # MyApp.yaml --
+Somewhere in myapp.conf.
+
+ <Plugin::Authentication>
+     default_realm   openid
+     <realms>
+         <openid>
+             ua_class   LWPx::ParanoidAgent
+             <credential>
+                 <store>
+                     class   OpenID
+                 </store>
+                 class   OpenID
+             </credential>
+         </openid>
+     </realms>
+ </Plugin::Authentication>
+
+Or in your myapp.yml if you're using L<YAML> instead.
+
  Plugin::Authentication:
    default_realm: openid
    realms:
      openid:
        credential:
          class: OpenID
+       ua_class: LWPx::ParanoidAgent
 
- # Root::openid().
+In a controller, perhaps C<Root::openid>.
+
  sub openid : Local {
       my($self, $c) = @_;
 
@@ -167,12 +186,12 @@ Catalyst::Authentication::Credential::OpenID - OpenID credential for L<Catalyst:
       }
  }
 
- # openid.tt
+And a L<Template> to match in C<openid.tt>.
+
  <form action="[% c.uri_for('/openid') %]" method="GET" name="openid">
  <input type="text" name="openid_identifier" class="openid" />
  <input type="submit" value="Sign in with OpenID" />
  </form>
-
 
 =head1 DESCRIPTION
 
@@ -184,15 +203,15 @@ Miyagawa -- and this is an attempt to deprecate both by conforming to
 the newish, at the time of this module's inception, realm-based
 authentication in L<Catalyst::Plugin::Authentication>.
 
- * Catalyst::Plugin::Authentication::OpenID (first)
- * Catalyst::Plugin::Authentication::Credential::OpenID (second)
- * Catalyst::Authentication::Credential::OpenID (this, the third)
+ 1. Catalyst::Plugin::Authentication::OpenID
+ 2. Catalyst::Plugin::Authentication::Credential::OpenID
+ 3. Catalyst::Authentication::Credential::OpenID
 
 The benefit of this version is that you can use an arbitrary number of
 authentication systems in your L<Catalyst> application and configure
 and call all of them in the same way.
 
-Note, both earlier versions of OpenID authentication use the method
+Note that both earlier versions of OpenID authentication use the method
 C<authenticate_openid()>. This module uses C<authenticate()> and
 relies on you to specify the realm. You can specify the realm as the
 default in the configuration or inline with each
@@ -206,7 +225,7 @@ implementation.
 
 =over 4
 
-=item * $c->authenticate({},"your_openid_realm");
+=item $c->authenticate({},"your_openid_realm");
 
 Call to authenticate the user via OpenID. Returns false if
 authorization is unsuccessful. Sets the user into the session and
@@ -224,7 +243,7 @@ It implicitly does this (sort of, it checks the request method too)-
  my $claimed_uri = $c->req->params->{openid_identifier};
  $c->authenticate({openid_identifier => $claimed_uri});
 
-=item * Catalyst::Authentication::Credential::OpenID->new()
+=item Catalyst::Authentication::Credential::OpenID->new()
 
 You will never call this. Catalyst does it for you. The only important
 thing you might like to know about it is that it merges its realm
@@ -239,23 +258,23 @@ Currently the only supported user class is L<Catalyst::Plugin::Authentication::U
 
 =over 4
 
-=item * $c->user->url
+=item $c->user->url
 
-=item * $c->user->display
+=item $c->user->display
 
-=item * $c->user->rss 
+=item $c->user->rss 
 
-=item * $c->user->atom
+=item $c->user->atom
 
-=item * $c->user->foaf
+=item $c->user->foaf
 
-=item * $c->user->declared_rss
+=item $c->user->declared_rss
 
-=item * $c->user->declared_atom
+=item $c->user->declared_atom
 
-=item * $c->user->declared_foaf
+=item $c->user->declared_foaf
 
-=item * $c->user->foafmaker
+=item $c->user->foafmaker
 
 =back
 
@@ -310,7 +329,45 @@ clear text passwords and one called "openid" which uses... uh, OpenID.
       },
       );
 
-And now, the same configuration in YAML.
+This is the same configuration in the default L<Catalyst> configuration format from L<Config::General>.
+
+ name   MyApp
+ <Plugin::Authentication>
+     default_realm   members
+     <realms>
+         <members>
+             <store>
+                 class   Minimal
+                 <users>
+                     <paco>
+                         password   l4s4v3n7ur45
+                     </paco>
+                 </users>
+             </store>
+             <credential>
+                 password_field   password
+                 password_type   clear
+                 class   Password
+             </credential>
+         </members>
+         <openid>
+             <ua_args>
+                 whitelisted_hosts   127.0.0.1
+                 whitelisted_hosts   localhost
+             </ua_args>
+             consumer_secret   Don't bother setting
+             ua_class   LWPx::ParanoidAgent
+             <credential>
+                 <store>
+                     class   OpenID
+                 </store>
+                 class   OpenID
+             </credential>
+         </openid>
+     </realms>
+ </Plugin::Authentication>
+
+And now, the same configuration in L<YAML>. B<NB>: L<YAML> is whitespace sensitive.
 
  name: MyApp
  Plugin::Authentication:
@@ -340,13 +397,13 @@ And now, the same configuration in YAML.
 
 B<NB>: There is no OpenID store yet. Trying for next release.
 
-=head1 CONFIGURATION
+=head2 MORE ON CONFIGURATION
 
 These are set in your realm. See above.
 
 =over 4
 
-=item * ua_args and ua_class
+=item ua_args and ua_class
 
 L<LWPx::ParanoidAgent> is the default agent -- C<ua_class>. You don't
 have to set it. I recommend that you do B<not> override it. You can
@@ -357,7 +414,7 @@ external requests, you open a big avenue for DoS (denial of service)
 attacks. L<LWPx::ParanoidAgent> defends against this.
 L<LWP::UserAgent> and any regular subclass of it will not.
 
-=item * consumer_secret
+=item consumer_secret
 
 The underlying L<Net::OpenID::Consumer> object is seeded with a
 secret. If it's important to you to set your own, you can. The default
@@ -366,7 +423,6 @@ of your Catalyst application (chopped at 255 characters if it's
 longer). This should generally be superior to any fixed string.
 
 =back
-
 
 =head1 TODO
 
@@ -389,7 +445,6 @@ Tatsuhiko Miyagawa's work is reused here.
 
 This module is free software; you can redistribute it and modify it
 under the same terms as Perl itself. See L<perlartistic>.
-
 
 =head1 DISCLAIMER OF WARRANTY
 
@@ -414,7 +469,6 @@ failure of the software to operate with any other software), even if
 such holder or other party has been advised of the possibility of
 such damages.
 
-
 =head1 THANKS
 
 To Benjamin Trott, Tatsuhiko Miyagawa, and Brad Fitzpatrick for the
@@ -423,13 +477,28 @@ Catalyst such a wonderful framework.
 
 =head1 SEE ALSO
 
-L<Catalyst>, L<Catalyst::Plugin::Authentication>,
-L<Net::OpenID::Consumer>, and L<LWPx::ParanoidAgent>.
+=over 4
 
-=head2 RELATED
+=item OpenID
 
 L<Net::OpenID::Server>, L<Net::OpenID::VerifiedIdentity>,
+L<Net::OpenID::Consumer>, and L<LWPx::ParanoidAgent>.
+
 L<http://openid.net/>, and L<http://openid.net/developers/specs/>.
+
+=item Catalyst Authentication
+
+L<Catalyst>, L<Catalyst::Plugin::Authentication>, L<Catalyst::Manual::Tutorial::Authorization>, and L<Catalyst::Manual::Tutorial::Authentication>.
+
+=item Catalyst Configuraiton
+
+L<Catalyst::Plugin::ConfigLoader>, L<Config::General>, and L<YAML>.
+
+=item Miscellaneous
+
+L<Catalyst::Manual::Tutorial::CatalystBasics>, L<Template>, L<LWPx::ParanoidAgent>.
+
+=back
 
 L<Catalyst::Plugin::Authentication::OpenID> (Benjamin Trott) and L<Catalyst::Plugin::Authentication::Credential::OpenID> (Tatsuhiko Miyagawa).
 

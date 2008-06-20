@@ -10,6 +10,7 @@ To install this module, run the following commands:
 
 	perl Makefile.PL
 	make
+        # See below for TEST_HTTP info
 	make test
 	make install
 
@@ -20,4 +21,9 @@ within a test Catalyst application. Failure here doesn't guarantee the
 module won't work for you but success pretty much guarantees it will
 work.
 
+  # bash
+  export TEST_HTTP=1
+
+  # tcsh and friends
+  setenv TEST_HTTP 1
 

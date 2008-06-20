@@ -1,8 +1,5 @@
 use inc::Module::Install;
 
-# use lib 'inc';
-# use Devel::AssertOS qw( Linux Unix Cygwin );
-
 name            "Catalyst-Authentication-Credential-OpenID";
 all_from        "lib/Catalyst/Authentication/Credential/OpenID.pm";
 
@@ -15,7 +12,8 @@ requires  "Catalyst::Exception"   => 0;
 requires  "UNIVERSAL::require"    => 0;
 requires  "Catalyst::Authentication::User::Hash" => 0;
 
-
+recommends "Config::General"     => "2";
+recommends "YAML"                => ".6";
 recommends "LWPx::ParanoidAgent" => "1.03";
 recommends "Math::BigInt"        => 0;
 

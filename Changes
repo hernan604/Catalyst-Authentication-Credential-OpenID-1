@@ -1,5 +1,12 @@
 Revision history for Catalyst::Authentication::Credential::OpenID
 
+0.03  Thu Jun 19 20:48:04 PDT 2008
+      - Updated config information with Config::General examples.
+      - Cleaned up TestApp a little.
+      - Swapped some code order around to make Perl::Critic my friend.
+      - Extended SEE ALSO.
+      - Updated Makefile a bit.
+
 0.02  Tue Apr  8 22:18:22 PDT 2008
       - Changed "use base" to "use parent."
       - Moved SVN to Catalyst dev box.
