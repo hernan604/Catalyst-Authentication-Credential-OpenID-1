@@ -35,4 +35,4 @@ requires:
   Net::OpenID::Consumer: 0.14
   UNIVERSAL::require: 0
   parent: 0.2
-version: 0.03
+version: 0.04

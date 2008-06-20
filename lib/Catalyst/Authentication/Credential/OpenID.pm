@@ -8,7 +8,7 @@ BEGIN {
     __PACKAGE__->mk_accessors(qw/ _config realm debug secret /);
 }
 
-our $VERSION = "0.03";
+our $VERSION = "0.04";
 
 use Net::OpenID::Consumer;
 use UNIVERSAL::require;
@@ -130,7 +130,7 @@ Catalyst::Authentication::Credential::OpenID - OpenID credential for L<Catalyst:
 
 =head1 VERSION
 
-0.03
+0.04
 
 =head1 SYNOPSIS
 
@@ -149,13 +149,10 @@ Somewhere in myapp.conf.
      default_realm   openid
      <realms>
          <openid>
-             ua_class   LWPx::ParanoidAgent
              <credential>
-                 <store>
-                     class   OpenID
-                 </store>
                  class   OpenID
              </credential>
+             ua_class   LWPx::ParanoidAgent
          </openid>
      </realms>
  </Plugin::Authentication>
@@ -438,6 +435,10 @@ Better diagnostics in errors. Debug info at all consumer calls.
 
 Roles from provider domains? Mapped? Direct? A generic "openid" auto_role?
 
+=head1 THANKS
+
+To Benjamin Trott (L<Catalyst::Plugin::Authentication::OpenID>), Tatsuhiko Miyagawa (L<Catalyst::Plugin::Authentication::Credential::OpenID>), and Brad Fitzpatrick for the great OpenID stuff and to Jay Kuri and everyone else who has made Catalyst such a wonderful framework.
+
 =head1 LICENSE AND COPYRIGHT
 
 Copyright (c) 2008, Ashley Pond V C<< <ashley@cpan.org> >>. Some of
@@ -469,12 +470,6 @@ failure of the software to operate with any other software), even if
 such holder or other party has been advised of the possibility of
 such damages.
 
-=head1 THANKS
-
-To Benjamin Trott, Tatsuhiko Miyagawa, and Brad Fitzpatrick for the
-great OpenID stuff and to Jay Kuri and everyone else who has made
-Catalyst such a wonderful framework.
-
 =head1 SEE ALSO
 
 =over 4
@@ -482,9 +477,7 @@ Catalyst such a wonderful framework.
 =item OpenID
 
 L<Net::OpenID::Server>, L<Net::OpenID::VerifiedIdentity>,
-L<Net::OpenID::Consumer>, and L<LWPx::ParanoidAgent>.
-
-L<http://openid.net/>, and L<http://openid.net/developers/specs/>.
+L<Net::OpenID::Consumer>, L<http://openid.net/>, and L<http://openid.net/developers/specs/>.
 
 =item Catalyst Authentication
 
@@ -496,10 +489,8 @@ L<Catalyst::Plugin::ConfigLoader>, L<Config::General>, and L<YAML>.
 
 =item Miscellaneous
 
-L<Catalyst::Manual::Tutorial::CatalystBasics>, L<Template>, L<LWPx::ParanoidAgent>.
+L<Catalyst::Manual::Tutorial>, L<Template>, L<LWPx::ParanoidAgent>.
 
 =back
-
-L<Catalyst::Plugin::Authentication::OpenID> (Benjamin Trott) and L<Catalyst::Plugin::Authentication::Credential::OpenID> (Tatsuhiko Miyagawa).
 
 =cut

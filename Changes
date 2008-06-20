@@ -1,5 +1,9 @@
 Revision history for Catalyst::Authentication::Credential::OpenID
 
+0.04  Thu Jun 19 23:20:00 PDT 2008
+      - Fixed some of the .conf example. Sigh.
+      - Other minor Pod tweaks.
+
 0.03  Thu Jun 19 20:48:04 PDT 2008
       - Updated config information with Config::General examples.
       - Cleaned up TestApp a little.
