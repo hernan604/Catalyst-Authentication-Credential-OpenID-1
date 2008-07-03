@@ -1,5 +1,12 @@
 Revision history for Catalyst::Authentication::Credential::OpenID
 
+0.05  Wed Jul  2 20:17:21 PDT 2008
+      - Removed UNIVERSAL::require to shrink prereqs and protect
+        namespaces.
+      - Turned on test app tests. I want to know if it's failing for
+        others.
+      - Swapped LWPx::ParanoidAgent for LWP::UA in the test.
+
 0.04  Thu Jun 19 23:20:00 PDT 2008
       - Fixed some of the .conf example. Sigh.
       - Other minor Pod tweaks.

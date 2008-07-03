@@ -8,15 +8,11 @@ use IO::Socket;
 use Test::More;
 use Test::WWW::Mechanize;
 
-
-plan skip_all => 'set TEST_HTTP to enable this test' unless $ENV{TEST_HTTP};
+# plan skip_all => 'set TEST_HTTP to enable this test' unless $ENV{TEST_HTTP};
 eval "use Catalyst::Devel 1.0";
 plan skip_all => 'Catalyst::Devel required' if $@;
 
-# plan "no_plan";
 plan tests => 17;
-
-# TEST FORK?
 
 # How long to wait for test server to start and timeout for UA.
 my $seconds = 30;
@@ -27,7 +23,6 @@ my $port = 30000 + int rand(1 + 10000);
  my $pipe = "perl -I$FindBin::Bin/../lib -I$FindBin::Bin/TestApp/lib $FindBin::Bin/TestApp/script/testapp_server.pl -f -port $port |";
 
 # my $pipe = "perl -I$FindBin::Bin/../lib -I$FindBin::Bin/TestApp/lib $FindBin::Bin/TestApp/script/testapp_server.pl -f -port $port 2>&1 |";
-
 
 my $pid = open my $server, $pipe
     or die "Unable to spawn standalone HTTP server: $!";

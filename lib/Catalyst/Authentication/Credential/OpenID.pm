@@ -8,10 +8,9 @@ BEGIN {
     __PACKAGE__->mk_accessors(qw/ _config realm debug secret /);
 }
 
-our $VERSION = "0.04";
+our $VERSION = "0.05";
 
 use Net::OpenID::Consumer;
-use UNIVERSAL::require;
 use Catalyst::Exception ();
 
 sub new : method {
@@ -37,11 +36,10 @@ sub new : method {
     $self->secret( $secret );
     $self->_config->{ua_class} ||= "LWPx::ParanoidAgent";
 
-    eval {
-        $self->_config->{ua_class}->require;
-    }
-    or Catalyst::Exception->throw("Could not 'require' user agent class " .
-                                  $self->_config->{ua_class});
+    my $agent_class = $self->_config->{ua_class};
+    eval "require $agent_class"
+        or Catalyst::Exception->throw("Could not 'require' user agent class " .
+                                      $self->_config->{ua_class});
 
     $c->log->debug("Setting consumer secret: " . $secret) if $self->debug;
 
@@ -126,15 +124,15 @@ __END__
 
 =head1 NAME
 
-Catalyst::Authentication::Credential::OpenID - OpenID credential for L<Catalyst::Plugin::Authentication> framework.
+Catalyst::Authentication::Credential::OpenID - OpenID credential for Catalyst::Plugin::Authentication framework.
 
 =head1 VERSION
 
-0.04
+0.05
 
 =head1 SYNOPSIS
 
-In MyApp.pm.
+In MyApp.pm-
 
  use Catalyst qw/
     Authentication
@@ -143,7 +141,7 @@ In MyApp.pm.
     Session::State::Cookie
  /;
 
-Somewhere in myapp.conf.
+Somewhere in myapp.conf-
 
  <Plugin::Authentication>
      default_realm   openid
@@ -157,7 +155,7 @@ Somewhere in myapp.conf.
      </realms>
  </Plugin::Authentication>
 
-Or in your myapp.yml if you're using L<YAML> instead.
+Or in your myapp.yml if you're using L<YAML> instead-
 
  Plugin::Authentication:
    default_realm: openid
@@ -167,7 +165,7 @@ Or in your myapp.yml if you're using L<YAML> instead.
          class: OpenID
        ua_class: LWPx::ParanoidAgent
 
-In a controller, perhaps C<Root::openid>.
+In a controller, perhaps C<Root::openid>-
 
  sub openid : Local {
       my($self, $c) = @_;
@@ -183,7 +181,7 @@ In a controller, perhaps C<Root::openid>.
       }
  }
 
-And a L<Template> to match in C<openid.tt>.
+And a L<Template> to match in C<openid.tt>-
 
  <form action="[% c.uri_for('/openid') %]" method="GET" name="openid">
  <input type="text" name="openid_identifier" class="openid" />

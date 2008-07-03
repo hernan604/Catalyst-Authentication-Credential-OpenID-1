@@ -1,7 +1,7 @@
 ---
-abstract: 'OpenID credential for L<Catalyst::Plugin::Authentication> framework.'
+abstract: 'OpenID credential for Catalyst::Plugin::Authentication framework.'
 author:
-  - ', Ashley Pond V C<< <ashley@cpan.org> >>. Some of'
+  - 'Ashley Pond V <ashley.org>'
 build_requires:
   Catalyst::Plugin::Session::Store::FastMmap: 0
   IO::Socket::INET: 0
@@ -33,6 +33,5 @@ requires:
   Class::Accessor::Fast: 0
   Crypt::DH: 0.05
   Net::OpenID::Consumer: 0.14
-  UNIVERSAL::require: 0
   parent: 0.2
-version: 0.04
+version: 0.05
