@@ -14,10 +14,13 @@ use Catalyst qw(
                 Session::State::Cookie
                 );
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 __PACKAGE__->config
     ( name => "TestApp",
+      session => {
+          storage => "/tmp/" . __PACKAGE__ . "-" . $VERSION,
+      },
       startup_time => time(),
       "Plugin::Authentication" => {
           default_realm => "members",
