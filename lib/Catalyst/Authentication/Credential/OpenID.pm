@@ -8,7 +8,7 @@ BEGIN {
     __PACKAGE__->mk_accessors(qw/ _config realm debug secret /);
 }
 
-our $VERSION = "0.06";
+our $VERSION = "0.07";
 
 use Net::OpenID::Consumer;
 use Catalyst::Exception ();
@@ -128,7 +128,7 @@ Catalyst::Authentication::Credential::OpenID - OpenID credential for Catalyst::P
 
 =head1 VERSION
 
-0.06
+0.07
 
 =head1 SYNOPSIS
 

@@ -3,9 +3,7 @@ abstract: 'OpenID credential for Catalyst::Plugin::Authentication framework.'
 author:
   - 'Ashley Pond V <ashley.org>'
 build_requires:
-  Catalyst::Plugin::Session::Store::FastMmap: 0.05
   IO::Socket::INET: 0
-  LWP::UserAgent: 0
   Net::DNS: 0
   Net::OpenID::Server: 0
   Test::More: 0.42
@@ -28,13 +26,15 @@ recommends:
   YAML: 0.6
 requires:
   Cache::FastMmap: 1.28
-  Catalyst: 0
+  Catalyst: 5.7
   Catalyst::Authentication::User::Hash: 0
   Catalyst::Devel: 1
   Catalyst::Exception: 0
-  Catalyst::Runtime: 5.7
+  Catalyst::Plugin::Session::Store::FastMmap: 0.05
   Class::Accessor::Fast: 0
   Crypt::DH: 0.05
+  HTML::Parser: 0
+  LWP::UserAgent: 0
   Net::OpenID::Consumer: 0.14
   parent: 0.2
-version: 0.06
+version: 0.07
