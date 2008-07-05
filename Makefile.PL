@@ -17,6 +17,8 @@ requires  "Catalyst::Exception";
 requires  "Catalyst::Authentication::User::Hash";
 requires  "Cache::FastMmap"       => "1.28";
 requires  "Catalyst::Plugin::Session::Store::FastMmap" => "0.05";
+requires  "Catalyst::Plugin::Session::State::Cookie";
+requires  "Catalyst::Engine::HTTP";
 
 recommends "Config::General"     => "2";
 recommends "YAML"                => "0.6";

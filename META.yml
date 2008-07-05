@@ -29,7 +29,9 @@ requires:
   Catalyst: 5.7
   Catalyst::Authentication::User::Hash: 0
   Catalyst::Devel: 1
+  Catalyst::Engine::HTTP: 0
   Catalyst::Exception: 0
+  Catalyst::Plugin::Session::State::Cookie: 0
   Catalyst::Plugin::Session::Store::FastMmap: 0.05
   Class::Accessor::Fast: 0
   Crypt::DH: 0.05
@@ -37,4 +39,4 @@ requires:
   LWP::UserAgent: 0
   Net::OpenID::Consumer: 0.14
   parent: 0.2
-version: 0.07
+version: 0.08

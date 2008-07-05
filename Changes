@@ -1,6 +1,9 @@
 Revision history for Catalyst::Authentication::Credential::OpenID
 
-0.07 Thu Jul  3 21:26:12 PDT 2008
+0.08  Sat Jul  5 13:13:14 PDT 2008
+      - Again, only change is to Makefile.PL reqs.
+
+0.07  Thu Jul  3 21:26:12 PDT 2008
       - Only changes are to Makefile for prereqs. The failures on CPAN
         testers are really weird. I think I misunderstood
         build_requires() in ModInst.
