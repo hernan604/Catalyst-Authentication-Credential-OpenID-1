@@ -8,7 +8,7 @@ BEGIN {
     __PACKAGE__->mk_accessors(qw/ _config realm debug secret /);
 }
 
-our $VERSION = "0.08";
+our $VERSION = "0.09";
 
 use Net::OpenID::Consumer;
 use Catalyst::Exception ();
@@ -78,7 +78,7 @@ sub authenticate : method {
             delayed_return => 1,
         );
         $c->res->redirect($check_url);
-        return;
+        $c->detach();
     }
     elsif ( $c->req->params->{'openid-check'} )
     {
@@ -128,7 +128,7 @@ Catalyst::Authentication::Credential::OpenID - OpenID credential for Catalyst::P
 
 =head1 VERSION
 
-0.08
+0.09
 
 =head1 SYNOPSIS
 

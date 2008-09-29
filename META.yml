@@ -39,4 +39,4 @@ requires:
   LWP::UserAgent: 0
   Net::OpenID::Consumer: 0.14
   parent: 0.2
-version: 0.08
+version: 0.09

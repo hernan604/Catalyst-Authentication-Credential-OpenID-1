@@ -1,5 +1,8 @@
 Revision history for Catalyst::Authentication::Credential::OpenID
 
+0.09  Mon Sep 29 18:29:59 PDT 2008
+      - Bug patch for boneheaded return v detach bug given by M. Blom.
+
 0.08  Sat Jul  5 13:13:14 PDT 2008
       - Again, only change is to Makefile.PL reqs.
 
