@@ -20,7 +20,7 @@ my $seconds = 30;
 # Spawn the standalone HTTP server.
 my $port = 30000 + int rand(1 + 10000);
 
- my $pipe = "perl -I$FindBin::Bin/../lib -I$FindBin::Bin/TestApp/lib $FindBin::Bin/TestApp/script/testapp_server.pl -f -port $port |";
+ my $pipe = "perl -I$FindBin::Bin/../lib -I$FindBin::Bin/TestApp/lib $FindBin::Bin/TestApp/script/testapp_server.pl -fork -port $port |";
 
 # my $pipe = "perl -I$FindBin::Bin/../lib -I$FindBin::Bin/TestApp/lib $FindBin::Bin/TestApp/script/testapp_server.pl -f -port $port 2>&1 |";
 
@@ -87,7 +87,8 @@ $mech->content_contains("You did it with OpenID!",
 
 $mech->get_ok($root, "GET $root");
 
-$mech->content_contains("provider/paco", "OpenID info is in the user");
+$mech->content_contains("provider/paco", "OpenID signed in");
+#$mech->content_contains("paco", "OpenID signed in as paco");
 
 # can't be verified
 

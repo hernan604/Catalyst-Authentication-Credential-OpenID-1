@@ -8,7 +8,7 @@ BEGIN {
     __PACKAGE__->mk_accessors(qw/ _config realm debug secret /);
 }
 
-our $VERSION = "0.09";
+our $VERSION = "0.10";
 
 use Net::OpenID::Consumer;
 use Catalyst::Exception ();
@@ -128,7 +128,7 @@ Catalyst::Authentication::Credential::OpenID - OpenID credential for Catalyst::P
 
 =head1 VERSION
 
-0.09
+0.10
 
 =head1 SYNOPSIS
 
@@ -481,7 +481,7 @@ L<Net::OpenID::Consumer>, L<http://openid.net/>, and L<http://openid.net/develop
 
 L<Catalyst>, L<Catalyst::Plugin::Authentication>, L<Catalyst::Manual::Tutorial::Authorization>, and L<Catalyst::Manual::Tutorial::Authentication>.
 
-=item Catalyst Configuraiton
+=item Catalyst Configuration
 
 L<Catalyst::Plugin::ConfigLoader>, L<Config::General>, and L<YAML>.
 

@@ -41,10 +41,11 @@ __PACKAGE__->config
                           }
               },
               openid => {
-#                  ua_class => "LWPx::ParanoidAgent",
-                  ua_class => "LWP::UserAgent",
+                  ua_class => "LWPx::ParanoidAgent",
+#                  ua_class => "LWP::UserAgent",
                   ua_args => {
                       whitelisted_hosts => [qw/ 127.0.0.1 localhost /],
+                      timeout => 10,
                   },
                   debug => 1,
                   credential => {

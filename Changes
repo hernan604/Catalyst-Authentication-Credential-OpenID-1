@@ -1,5 +1,13 @@
 Revision history for Catalyst::Authentication::Credential::OpenID
 
+0.10  Thu Oct  2 19:13:42 PDT 2008
+      - Just twiddled the requirements calls in the Makefile. I can't
+        figure out why testers are failing it for prereqs it *is*
+        listing. Someone recently mentioned this same problem on
+        use.perl so I'm giving this a shot.
+      - Spelling fix in Pod.
+      - Updated tests and test server script too.
+
 0.09  Mon Sep 29 18:29:59 PDT 2008
       - Bug patch for boneheaded return v detach bug given by M. Blom.
 
