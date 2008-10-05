@@ -8,7 +8,7 @@ BEGIN {
     __PACKAGE__->mk_accessors(qw/ _config realm debug secret /);
 }
 
-our $VERSION = "0.10";
+our $VERSION = "0.11";
 
 use Net::OpenID::Consumer;
 use Catalyst::Exception ();
@@ -128,7 +128,7 @@ Catalyst::Authentication::Credential::OpenID - OpenID credential for Catalyst::P
 
 =head1 VERSION
 
-0.10
+0.11
 
 =head1 SYNOPSIS
 
@@ -191,10 +191,10 @@ And a L<Template> to match in C<openid.tt>-
 =head1 DESCRIPTION
 
 This is the B<third> OpenID related authentication piece for
-L<Catalyst>. The first -- L<Catalyst::Plugin::Authentication::OpenID>
-by Benjamin Trott -- was deprecated by the second --
+L<Catalyst>. The first E<mdash> L<Catalyst::Plugin::Authentication::OpenID>
+by Benjamin Trott E<mdash> was deprecated by the second E<mdash>
 L<Catalyst::Plugin::Authentication::Credential::OpenID> by Tatsuhiko
-Miyagawa -- and this is an attempt to deprecate both by conforming to
+Miyagawa E<mdash> and this is an attempt to deprecate both by conforming to
 the newish, at the time of this module's inception, realm-based
 authentication in L<Catalyst::Plugin::Authentication>.
 
@@ -390,7 +390,7 @@ And now, the same configuration in L<YAML>. B<NB>: L<YAML> is whitespace sensiti
            - 127.0.0.1
            - localhost
 
-B<NB>: There is no OpenID store yet. Trying for next release.
+B<NB>: There is no OpenID store yet.
 
 =head2 MORE ON CONFIGURATION
 
@@ -400,7 +400,7 @@ These are set in your realm. See above.
 
 =item ua_args and ua_class
 
-L<LWPx::ParanoidAgent> is the default agent -- C<ua_class>. You don't
+L<LWPx::ParanoidAgent> is the default agent E<mdash> C<ua_class>. You don't
 have to set it. I recommend that you do B<not> override it. You can
 with any well behaved L<LWP::UserAgent>. You probably should not.
 L<LWPx::ParanoidAgent> buys you many defenses and extra security

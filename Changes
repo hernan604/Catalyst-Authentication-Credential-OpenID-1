@@ -1,5 +1,9 @@
 Revision history for Catalyst::Authentication::Credential::OpenID
 
+0.11  Sun Oct  5 00:41:37 PDT 2008
+      - Added LWPx paranoid to build_requires.
+      - Put some experimental mdash entities into the Pod.
+
 0.10  Thu Oct  2 19:13:42 PDT 2008
       - Just twiddled the requirements calls in the Makefile. I can't
         figure out why testers are failing it for prereqs it *is*
