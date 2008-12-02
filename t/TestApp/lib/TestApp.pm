@@ -14,7 +14,7 @@ use Catalyst qw(
                 Session::State::Cookie
                 );
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 __PACKAGE__->config
     ( name => "TestApp",
@@ -37,7 +37,7 @@ __PACKAGE__->config
                                   paco => {
                                       password => "l4s4v3n7ur45",
                                   },
-                              }                       
+                              }
                           }
               },
               openid => {
@@ -47,10 +47,17 @@ __PACKAGE__->config
                       whitelisted_hosts => [qw/ 127.0.0.1 localhost /],
                       timeout => 10,
                   },
+                  extension_args => [
+                      'http://openid.net/extensions/sreg/1.1',
+                      {
+                       required => 'email',
+                       optional => 'fullname,nickname,timezone',
+                      },
+                  ],
                   debug => 1,
                   credential => {
                       class => "OpenID",
-#DOES NOTHING                      use_session => 1        
+#DOES NOTHING                      use_session => 1,
                       store => {
                           class => "OpenID",
                       },
@@ -60,8 +67,7 @@ __PACKAGE__->config
       },
       );
 
-# Start the application
-__PACKAGE__->setup;
+__PACKAGE__->setup();
 
 1;
 

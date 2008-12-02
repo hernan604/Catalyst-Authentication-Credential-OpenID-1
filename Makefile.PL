@@ -12,7 +12,7 @@ requires  "Cache::FastMmap"       => "1.28";
 requires  "Catalyst"              => "5.7";
 requires  "Catalyst::Devel"       => "1";
 requires  "Crypt::DH"             => "0.05"; # IIRC OpenID stuff forgets to prereq this
-requires  "Net::OpenID::Consumer" => "0.14";
+requires  "Net::OpenID::Consumer" => "1.03";
 requires  "Catalyst::Authentication::User::Hash" => undef;
 requires  "Catalyst::Plugin::Session::Store::FastMmap" => "0.05";
 requires  "Catalyst::Plugin::Session::State::Cookie" => "0.08";
@@ -25,7 +25,7 @@ recommends "LWPx::ParanoidAgent" => "1.03";
 
 build_requires "LWPx::ParanoidAgent" => "1.03";
 build_requires  "Test::More"           => "0.42";
-build_requires  "Net::OpenID::Server"  => undef;
+build_requires  "Net::OpenID::Server"  => "1.02";
 build_requires  "Test::WWW::Mechanize" => "1.20";
 build_requires  "Net::DNS"             => undef;
 build_requires  "IO::Socket::INET"     => undef;

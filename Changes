@@ -1,5 +1,14 @@
 Revision history for Catalyst::Authentication::Credential::OpenID
 
+0.12  Mon Dec  1 19:28:02 PST 2008
+      - Everything is finally passing tests so I put most of the
+        previous versions on the backpan because they're nearly
+        identical except for Makefile changes.
+      - Applied code from Menno Blom to allow simple registration
+        to work. Considered experimental for now, I think. Not because
+        it won't stay but because it might not work as expected.
+      - Bumped reqs on OpenID family to support 2.0 features.
+
 0.11  Sun Oct  5 00:41:37 PDT 2008
       - Added LWPx paranoid to build_requires.
       - Put some experimental mdash entities into the Pod.

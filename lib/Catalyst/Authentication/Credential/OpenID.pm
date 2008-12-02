@@ -1,14 +1,13 @@
 package Catalyst::Authentication::Credential::OpenID;
 use strict;
-use warnings;
-no warnings "uninitialized";
+# use warnings; no warnings "uninitialized"; # for testing, not production
 use parent "Class::Accessor::Fast";
 
 BEGIN {
     __PACKAGE__->mk_accessors(qw/ _config realm debug secret /);
 }
 
-our $VERSION = "0.11";
+our $VERSION = "0.12";
 
 use Net::OpenID::Consumer;
 use Catalyst::Exception ();
@@ -33,7 +32,7 @@ sub new : method {
                                                             );
 
     $secret = substr($secret,0,255) if length $secret > 255;
-    $self->secret( $secret );
+    $self->secret($secret);
     $self->_config->{ua_class} ||= "LWPx::ParanoidAgent";
 
     my $agent_class = $self->_config->{ua_class};
@@ -72,6 +71,9 @@ sub authenticate : method {
         my $identity = $csr->claimed_identity($claimed_uri)
             or Catalyst::Exception->throw($csr->err);
 
+        $identity->set_extension_args(@{$self->_config->{extension_args}})
+            if $self->_config->{extension_args};
+
         my $check_url = $identity->check_url(
             return_to  => $current . '?openid-check=1',
             trust_root => $current,
@@ -96,6 +98,10 @@ sub authenticate : method {
             # This is where we ought to build an OpenID user and verify against the spec.
             my $user = +{ map { $_ => scalar $identity->$_ }
                 qw( url display rss atom foaf declared_rss declared_atom declared_foaf foafmaker ) };
+            
+            for(keys %{$self->{_config}->{extensions}}) {
+                $user->{extensions}->{$_} = $identity->signed_extension_fields($_);
+            }
 
             my $user_obj = $realm->find_user($user, $c);
 
@@ -216,7 +222,7 @@ This module functions quite differently internally from the others.
 See L<Catalyst::Plugin::Authentication::Internals> for more about this
 implementation.
 
-=head1 METHOD
+=head1 METHODS
 
 =over 4
 
@@ -319,10 +325,17 @@ clear text passwords and one called "openid" which uses... uh, OpenID.
                           class => "OpenID",
                       },
                   },
+                  extension_args => [
+                      'http://openid.net/extensions/sreg/1.1',
+                      {
+                       required => 'email',
+                       optional => 'fullname,nickname,timezone',
+                      },
+                  ],
               },
           },
-      },
-      );
+      }
+    );
 
 This is the same configuration in the default L<Catalyst> configuration format from L<Config::General>.
 
@@ -358,6 +371,11 @@ This is the same configuration in the default L<Catalyst> configuration format f
                  </store>
                  class   OpenID
              </credential>
+             <extension_args>
+                 http://openid.net/extensions/sreg/1.1
+                 required   email
+                 optional   fullname,nickname,timezone
+             </extension_args>
          </openid>
      </realms>
  </Plugin::Authentication>
@@ -389,8 +407,16 @@ And now, the same configuration in L<YAML>. B<NB>: L<YAML> is whitespace sensiti
          whitelisted_hosts:
            - 127.0.0.1
            - localhost
+       extension_args:
+           - http://openid.net/extensions/sreg/1.1
+           - required: email
+             optional: fullname,nickname,timezone
 
 B<NB>: There is no OpenID store yet.
+
+=head2 EXTENSIONS TO OPENID
+
+The L<Simple Registration|http://openid.net/extensions/sreg/1.1> (SREG) extension to OpenID is supported in the L<Net::OpenID> family now. Experimental support for it is included here as of v0.12. SREG is the only supported extension in OpenID 1.1. It's experimental in the sense it's a new interface and barely tested. Support for OpenID extensions is here to stay.
 
 =head2 MORE ON CONFIGURATION
 
@@ -421,6 +447,8 @@ longer). This should generally be superior to any fixed string.
 
 =head1 TODO
 
+Support more of the new methods in the L<Net::OpenID> kit.
+
 There are some interesting implications with this sort of setup. Does
 a user aggregate realms or can a user be signed in under more than one
 realm? The documents could contain a recipe of the self-answering
@@ -435,15 +463,15 @@ Roles from provider domains? Mapped? Direct? A generic "openid" auto_role?
 
 =head1 THANKS
 
-To Benjamin Trott (L<Catalyst::Plugin::Authentication::OpenID>), Tatsuhiko Miyagawa (L<Catalyst::Plugin::Authentication::Credential::OpenID>), and Brad Fitzpatrick for the great OpenID stuff and to Jay Kuri and everyone else who has made Catalyst such a wonderful framework.
+To Benjamin Trott (L<Catalyst::Plugin::Authentication::OpenID>), Tatsuhiko Miyagawa (L<Catalyst::Plugin::Authentication::Credential::OpenID>), Brad Fitzpatrick for the great OpenID stuff, Martin Atkins for picking up the code to handle OpenID 2.0, and Jay Kuri and everyone else who has made Catalyst such a wonderful framework.
+
+L<Meno Blom|http://search.cpan.org/~blom/> provided a bug fix and the hook to use OpenID extensions.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2008, Ashley Pond V C<< <ashley@cpan.org> >>. Some of
-Tatsuhiko Miyagawa's work is reused here.
+Copyright (c) 2008, Ashley Pond V C<< <ashley@cpan.org> >>. Some of Tatsuhiko Miyagawa's work is reused here.
 
-This module is free software; you can redistribute it and modify it
-under the same terms as Perl itself. See L<perlartistic>.
+This module is free software; you can redistribute it and modify it under the same terms as Perl itself. See L<perlartistic>.
 
 =head1 DISCLAIMER OF WARRANTY
 
@@ -474,8 +502,7 @@ such damages.
 
 =item OpenID
 
-L<Net::OpenID::Server>, L<Net::OpenID::VerifiedIdentity>,
-L<Net::OpenID::Consumer>, L<http://openid.net/>, and L<http://openid.net/developers/specs/>.
+L<Net::OpenID::Server>, L<Net::OpenID::VerifiedIdentity>, L<Net::OpenID::Consumer>, L<http://openid.net/>, L<http://openid.net/developers/specs/>, and L<http://openid.net/extensions/sreg/1.1>.
 
 =item Catalyst Authentication
 
