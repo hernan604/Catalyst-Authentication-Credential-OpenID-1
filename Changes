@@ -1,5 +1,8 @@
 Revision history for Catalyst::Authentication::Credential::OpenID
 
+0.13  Mon Dec  1 19:42:31 PST 2008
+      - s/Meno/Menno/ and version fix in the Pod are the only changes. Sigh.
+
 0.12  Mon Dec  1 19:28:02 PST 2008
       - Everything is finally passing tests so I put most of the
         previous versions on the backpan because they're nearly

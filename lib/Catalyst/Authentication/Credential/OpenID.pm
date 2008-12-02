@@ -7,7 +7,7 @@ BEGIN {
     __PACKAGE__->mk_accessors(qw/ _config realm debug secret /);
 }
 
-our $VERSION = "0.12";
+our $VERSION = "0.13";
 
 use Net::OpenID::Consumer;
 use Catalyst::Exception ();
@@ -134,7 +134,7 @@ Catalyst::Authentication::Credential::OpenID - OpenID credential for Catalyst::P
 
 =head1 VERSION
 
-0.11
+0.13
 
 =head1 SYNOPSIS
 
@@ -465,7 +465,7 @@ Roles from provider domains? Mapped? Direct? A generic "openid" auto_role?
 
 To Benjamin Trott (L<Catalyst::Plugin::Authentication::OpenID>), Tatsuhiko Miyagawa (L<Catalyst::Plugin::Authentication::Credential::OpenID>), Brad Fitzpatrick for the great OpenID stuff, Martin Atkins for picking up the code to handle OpenID 2.0, and Jay Kuri and everyone else who has made Catalyst such a wonderful framework.
 
-L<Meno Blom|http://search.cpan.org/~blom/> provided a bug fix and the hook to use OpenID extensions.
+L<Menno Blom|http://search.cpan.org/~blom/> provided a bug fix and the hook to use OpenID extensions.
 
 =head1 LICENSE AND COPYRIGHT
 
