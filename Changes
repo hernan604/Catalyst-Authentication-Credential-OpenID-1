@@ -1,5 +1,12 @@
 Revision history for Catalyst::Authentication::Credential::OpenID
 
+0.14  Tue Aug 18 22:37:51 PDT 2009
+      - Split live tests into two test apps to avoid the need to fork
+        to have a self-answering server; crudely done, it's the same
+        exact code as before doubled for now.
+      - Took LWPx::ParanoidAgent out of tests. It's been too long
+        since it's been broken by the LWP debug deprecation.
+
 0.13  Mon Dec  1 19:42:31 PST 2008
       - s/Meno/Menno/ and version fix in the Pod are the only changes. Sigh.
 

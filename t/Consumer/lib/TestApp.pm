@@ -14,7 +14,7 @@ use Catalyst qw(
                 Session::State::Cookie
                 );
 
-our $VERSION = '0.03';
+our $VERSION = '0.00001';
 
 __PACKAGE__->config
     ( name => "TestApp",
@@ -41,8 +41,8 @@ __PACKAGE__->config
                           }
               },
               openid => {
-                  ua_class => "LWPx::ParanoidAgent",
-#                  ua_class => "LWP::UserAgent",
+                  # ua_class => "LWPx::ParanoidAgent",
+                  ua_class => "LWP::UserAgent",
                   ua_args => {
                       whitelisted_hosts => [qw/ 127.0.0.1 localhost /],
                       timeout => 10,
