@@ -7,7 +7,7 @@ BEGIN {
     __PACKAGE__->mk_accessors(qw/ _config realm debug secret /);
 }
 
-our $VERSION = "0.14";
+our $VERSION = "0.16";
 
 use Net::OpenID::Consumer;
 use Catalyst::Exception ();
@@ -33,7 +33,9 @@ sub new : method {
 
     $secret = substr($secret,0,255) if length $secret > 255;
     $self->secret($secret);
-    $self->_config->{ua_class} ||= "LWPx::ParanoidAgent";
+    # If user has no preference we prefer L::PA b/c it can prevent DoS attacks.
+    $self->_config->{ua_class} ||= eval "use LWPx::ParanoidAgent" ?
+        "LWPx::ParanoidAgent" : "LWP::UserAgent";
 
     my $agent_class = $self->_config->{ua_class};
     eval "require $agent_class"
@@ -58,21 +60,42 @@ sub authenticate : method {
     $claimed_uri ||= $c->req->method eq 'GET' ? 
         $c->req->query_params->{ $field } : $c->req->body_params->{ $field };
 
+
     my $csr = Net::OpenID::Consumer->new(
         ua => $self->_config->{ua_class}->new(%{$self->_config->{ua_args} || {}}),
         args => $c->req->params,
         consumer_secret => $self->secret,
     );
 
+    if ( $self->_config->{extension_args} and $self->debug )
+    {
+        $c->log->info("The configuration key 'extension_args' is deprecated; use 'extensions'");
+    }
+
+    my @extensions = $self->_config->{extensions} ?
+        @{ $self->_config->{extensions} } : $self->_config->{extension_args} ?
+        @{ $self->_config->{extension_args} } : ();
+
     if ( $claimed_uri )
     {
         my $current = $c->uri_for($c->req->uri->path); # clear query/fragment...
 
-        my $identity = $csr->claimed_identity($claimed_uri)
-            or Catalyst::Exception->throw($csr->err);
+        my $identity = $csr->claimed_identity($claimed_uri);
+        unless ( $identity )
+        {
+            if ( $self->_config->{errors_are_fatal} )
+            {
+                Catalyst::Exception->throw($csr->err);
+            }
+            else
+            {
+                $c->log->error($csr->err . " -- $claimed_uri");
+                $c->detach();
+            }
+        }
 
-        $identity->set_extension_args(@{$self->_config->{extension_args}})
-            if $self->_config->{extension_args};
+        $identity->set_extension_args(@extensions)
+            if @extensions;
 
         my $check_url = $identity->check_url(
             return_to  => $current . '?openid-check=1',
@@ -98,9 +121,11 @@ sub authenticate : method {
             # This is where we ought to build an OpenID user and verify against the spec.
             my $user = +{ map { $_ => scalar $identity->$_ }
                 qw( url display rss atom foaf declared_rss declared_atom declared_foaf foafmaker ) };
-            
-            for(keys %{$self->{_config}->{extensions}}) {
-                $user->{extensions}->{$_} = $identity->signed_extension_fields($_);
+            # Dude, I did not design the array as hash spec. Don't curse me [apv].
+            my %flat = @extensions;
+            for my $key ( keys %flat )
+            {
+                $user->{extensions}->{$key} = $identity->signed_extension_fields($key);
             }
 
             my $user_obj = $realm->find_user($user, $c);
@@ -111,14 +136,16 @@ sub authenticate : method {
             }
             else
             {
-                $c->log->debug("Verified OpenID identity failed to load with find_user; bad user_class? Try 'Null.'") if $c->debug;
+                $c->log->debug("Verified OpenID identity failed to load with find_user; bad user_class? Try 'Null.'") if $self->debug;
                 return;
             }
         }
         else
         {
-            Catalyst::Exception->throw("Error validating identity: " .
-                                       $csr->err);
+            $self->_config->{errors_are_fatal} ?
+                Catalyst::Exception->throw("Error validating identity: " . $csr->err)
+                      :
+                $c->log->error( $csr->err);
         }
     }
     return;
@@ -134,7 +161,19 @@ Catalyst::Authentication::Credential::OpenID - OpenID credential for Catalyst::P
 
 =head1 VERSION
 
-0.13
+0.16
+
+=head1 BACKWARDS COMPATIBILITY CHANGES
+
+=head2 EXTENSION_ARGS v EXTENSIONS
+
+B<NB>: The extensions were previously configured under the key C<extension_args>. They are now configured under C<extensions>. This prevents the need for double configuration but it breaks extensions in your application if you do not change the name. The old version is supported for now but may be phased out at any time.
+
+As previously noted, L</EXTENSIONS TO OPENID>, I have not tested the extensions. I would be grateful for any feedback or, better, tests.
+
+=head2 FATALS
+
+The problems encountered by failed OpenID operations have always been fatals in the past. This is unexpected behavior for most users as it differs from other credentials. Authentication errors here are no longer fatal. Debug/error output is improved to offset the loss of information. If for some reason you would prefer the legacy/fatal behavior, set the configuration variable C<errors_are_fatal> to a true value.
 
 =head1 SYNOPSIS
 
@@ -155,8 +194,8 @@ Somewhere in myapp.conf-
          <openid>
              <credential>
                  class   OpenID
+                 ua_class   LWP::UserAgent
              </credential>
-             ua_class   LWPx::ParanoidAgent
          </openid>
      </realms>
  </Plugin::Authentication>
@@ -169,7 +208,7 @@ Or in your myapp.yml if you're using L<YAML> instead-
      openid:
        credential:
          class: OpenID
-       ua_class: LWPx::ParanoidAgent
+         ua_class: LWP::UserAgent
 
 In a controller, perhaps C<Root::openid>-
 
@@ -314,24 +353,25 @@ clear text passwords and one called "openid" which uses... uh, OpenID.
                           }
               },
               openid => {
-                  consumer_secret => "Don't bother setting",
-                  ua_class => "LWPx::ParanoidAgent",
-                  ua_args => {
-                      whitelisted_hosts => [qw/ 127.0.0.1 localhost /],
-                  },
                   credential => {
                       class => "OpenID",
                       store => {
                           class => "OpenID",
                       },
-                  },
-                  extension_args => [
-                      'http://openid.net/extensions/sreg/1.1',
-                      {
-                       required => 'email',
-                       optional => 'fullname,nickname,timezone',
+                      consumer_secret => "Don't bother setting",
+                      ua_class => "LWP::UserAgent",
+                      # whitelist is only relevant for LWPx::ParanoidAgent
+                      ua_args => {
+                          whitelisted_hosts => [qw/ 127.0.0.1 localhost /],
                       },
-                  ],
+                      extensions => [
+                          'http://openid.net/extensions/sreg/1.1',
+                          {
+                           required => 'email',
+                           optional => 'fullname,nickname,timezone',
+                          },
+                      ],
+                  },
               },
           },
       }
@@ -359,23 +399,23 @@ This is the same configuration in the default L<Catalyst> configuration format f
              </credential>
          </members>
          <openid>
-             <ua_args>
-                 whitelisted_hosts   127.0.0.1
-                 whitelisted_hosts   localhost
-             </ua_args>
-             consumer_secret   Don't bother setting
-             ua_class   LWPx::ParanoidAgent
              <credential>
                  <store>
                      class   OpenID
                  </store>
                  class   OpenID
+                 <ua_args>
+                     whitelisted_hosts   127.0.0.1
+                     whitelisted_hosts   localhost
+                 </ua_args>
+                 consumer_secret   Don't bother setting
+                 ua_class   LWP::UserAgent
+                 <extensions>
+                     http://openid.net/extensions/sreg/1.1
+                     required   email
+                     optional   fullname,nickname,timezone
+                 </extensions>
              </credential>
-             <extension_args>
-                 http://openid.net/extensions/sreg/1.1
-                 required   email
-                 optional   fullname,nickname,timezone
-             </extension_args>
          </openid>
      </realms>
  </Plugin::Authentication>
@@ -401,61 +441,54 @@ And now, the same configuration in L<YAML>. B<NB>: L<YAML> is whitespace sensiti
          class: OpenID
          store:
            class: OpenID
-       consumer_secret: Don't bother setting
-       ua_class: LWPx::ParanoidAgent
-       ua_args:
-         whitelisted_hosts:
-           - 127.0.0.1
-           - localhost
-       extension_args:
-           - http://openid.net/extensions/sreg/1.1
-           - required: email
-             optional: fullname,nickname,timezone
+         consumer_secret: Don't bother setting
+         ua_class: LWP::UserAgent
+         ua_args:
+           # whitelist is only relevant for LWPx::ParanoidAgent
+           whitelisted_hosts:
+             - 127.0.0.1
+             - localhost
+         extensions:
+             - http://openid.net/extensions/sreg/1.1
+             - required: email
+               optional: fullname,nickname,timezone
 
 B<NB>: There is no OpenID store yet.
 
 =head2 EXTENSIONS TO OPENID
 
-The L<Simple Registration|http://openid.net/extensions/sreg/1.1> (SREG) extension to OpenID is supported in the L<Net::OpenID> family now. Experimental support for it is included here as of v0.12. SREG is the only supported extension in OpenID 1.1. It's experimental in the sense it's a new interface and barely tested. Support for OpenID extensions is here to stay.
+The Simple Registration--L<http://openid.net/extensions/sreg/1.1>--(SREG) extension to OpenID is supported in the L<Net::OpenID> family now. Experimental support for it is included here as of v0.12. SREG is the only supported extension in OpenID 1.1. It's experimental in the sense it's a new interface and barely tested. Support for OpenID extensions is here to stay.
 
 =head2 MORE ON CONFIGURATION
-
-These are set in your realm. See above.
 
 =over 4
 
 =item ua_args and ua_class
 
-L<LWPx::ParanoidAgent> is the default agent E<mdash> C<ua_class>. You don't
-have to set it. I recommend that you do B<not> override it. You can
-with any well behaved L<LWP::UserAgent>. You probably should not.
-L<LWPx::ParanoidAgent> buys you many defenses and extra security
-checks. When you allow your application users freedom to initiate
-external requests, you open a big avenue for DoS (denial of service)
-attacks. L<LWPx::ParanoidAgent> defends against this.
-L<LWP::UserAgent> and any regular subclass of it will not.
+L<LWPx::ParanoidAgent> is the default agent E<mdash> C<ua_class> E<mdash> if it's available, L<LWP::UserAgent> if not. You don't have to set
+it. I recommend that you do B<not> override it. You can with any well behaved L<LWP::UserAgent>. You probably should not.
+L<LWPx::ParanoidAgent> buys you many defenses and extra security checks. When you allow your application users freedom to initiate external
+requests, you open an avenue for DoS (denial of service) attacks. L<LWPx::ParanoidAgent> defends against this. L<LWP::UserAgent> and any
+regular subclass of it will not.
 
 =item consumer_secret
 
-The underlying L<Net::OpenID::Consumer> object is seeded with a
-secret. If it's important to you to set your own, you can. The default
-uses this package name + its version + the sorted configuration keys
-of your Catalyst application (chopped at 255 characters if it's
-longer). This should generally be superior to any fixed string.
+The underlying L<Net::OpenID::Consumer> object is seeded with a secret. If it's important to you to set your own, you can. The default uses
+this package name + its version + the sorted configuration keys of your Catalyst application (chopped at 255 characters if it's longer).
+This should generally be superior to any fixed string.
 
 =back
 
 =head1 TODO
 
+Option to suppress fatals.
+
 Support more of the new methods in the L<Net::OpenID> kit.
 
-There are some interesting implications with this sort of setup. Does
-a user aggregate realms or can a user be signed in under more than one
-realm? The documents could contain a recipe of the self-answering
-OpenID end-point that is in the tests.
+There are some interesting implications with this sort of setup. Does a user aggregate realms or can a user be signed in under more than one
+realm? The documents could contain a recipe of the self-answering OpenID end-point that is in the tests.
 
-Debug statements need to be both expanded and limited via realm
-configuration.
+Debug statements need to be both expanded and limited via realm configuration.
 
 Better diagnostics in errors. Debug info at all consumer calls.
 
@@ -465,36 +498,27 @@ Roles from provider domains? Mapped? Direct? A generic "openid" auto_role?
 
 To Benjamin Trott (L<Catalyst::Plugin::Authentication::OpenID>), Tatsuhiko Miyagawa (L<Catalyst::Plugin::Authentication::Credential::OpenID>), Brad Fitzpatrick for the great OpenID stuff, Martin Atkins for picking up the code to handle OpenID 2.0, and Jay Kuri and everyone else who has made Catalyst such a wonderful framework.
 
-L<Menno Blom|http://search.cpan.org/~blom/> provided a bug fix and the hook to use OpenID extensions.
+Menno Blom provided a bug fix and the hook to use OpenID extensions.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2008, Ashley Pond V C<< <ashley@cpan.org> >>. Some of Tatsuhiko Miyagawa's work is reused here.
+Copyright (c) 2008-2009, Ashley Pond V C<< <ashley@cpan.org> >>. Some of Tatsuhiko Miyagawa's work is reused here.
 
 This module is free software; you can redistribute it and modify it under the same terms as Perl itself. See L<perlartistic>.
 
 =head1 DISCLAIMER OF WARRANTY
 
-Because this software is licensed free of charge, there is no warranty
-for the software, to the extent permitted by applicable law. Except when
-otherwise stated in writing the copyright holders and other parties
-provide the software "as is" without warranty of any kind, either
-expressed or implied, including, but not limited to, the implied
-warranties of merchantability and fitness for a particular purpose. The
-entire risk as to the quality and performance of the software is with
-you. Should the software prove defective, you assume the cost of all
+Because this software is licensed free of charge, there is no warranty for the software, to the extent permitted by applicable law. Except
+when otherwise stated in writing the copyright holders and other parties provide the software "as is" without warranty of any kind, either
+expressed or implied, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose. The
+entire risk as to the quality and performance of the software is with you. Should the software prove defective, you assume the cost of all
 necessary servicing, repair, or correction.
 
-In no event unless required by applicable law or agreed to in writing
-will any copyright holder, or any other party who may modify or
-redistribute the software as permitted by the above license, be
-liable to you for damages, including any general, special, incidental,
-or consequential damages arising out of the use or inability to use
-the software (including but not limited to loss of data or data being
-rendered inaccurate or losses sustained by you or third parties or a
-failure of the software to operate with any other software), even if
-such holder or other party has been advised of the possibility of
-such damages.
+In no event unless required by applicable law or agreed to in writing will any copyright holder, or any other party who may modify or
+redistribute the software as permitted by the above license, be liable to you for damages, including any general, special, incidental, or
+consequential damages arising out of the use or inability to use the software (including but not limited to loss of data or data being
+rendered inaccurate or losses sustained by you or third parties or a failure of the software to operate with any other software), even if
+such holder or other party has been advised of the possibility of such damages.
 
 =head1 SEE ALSO
 
@@ -502,11 +526,13 @@ such damages.
 
 =item OpenID
 
-L<Net::OpenID::Server>, L<Net::OpenID::VerifiedIdentity>, L<Net::OpenID::Consumer>, L<http://openid.net/>, L<http://openid.net/developers/specs/>, and L<http://openid.net/extensions/sreg/1.1>.
+L<Net::OpenID::Server>, L<Net::OpenID::VerifiedIdentity>, L<Net::OpenID::Consumer>, L<http://openid.net/>,
+L<http://openid.net/developers/specs/>, and L<http://openid.net/extensions/sreg/1.1>.
 
 =item Catalyst Authentication
 
-L<Catalyst>, L<Catalyst::Plugin::Authentication>, L<Catalyst::Manual::Tutorial::Authorization>, and L<Catalyst::Manual::Tutorial::Authentication>.
+L<Catalyst>, L<Catalyst::Plugin::Authentication>, L<Catalyst::Manual::Tutorial::Authorization>, and
+L<Catalyst::Manual::Tutorial::Authentication>.
 
 =item Catalyst Configuration
 

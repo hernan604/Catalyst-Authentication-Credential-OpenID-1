@@ -11,7 +11,6 @@ requires "LWP::UserAgent"    => undef;
 requires "Cache::FastMmap"    => "1.28";
 requires "Catalyst"       => "5.7";
 requires "Catalyst::Devel"    => "1";
-requires "Crypt::DH"       => "0.05"; # IIRC OpenID stuff forgets to prereq this
 requires "Net::OpenID::Consumer" => "1.03";
 requires "Catalyst::Authentication::User::Hash" => undef;
 requires "Catalyst::Plugin::Session::Store::FastMmap" => "0.05";
@@ -23,12 +22,19 @@ recommends "YAML"        => "0.6";
 recommends "Math::BigInt"    => undef;
 recommends "LWPx::ParanoidAgent" => "1.03";
 
-test_requires "LWPx::ParanoidAgent" => "1.03";
+test_requires "Catalyst::Engine::HTTP";
+
 test_requires "Test::More"      => "0.42";
-test_requires "Net::OpenID::Server" => "1.02";
-test_requires "Test::WWW::Mechanize" => "1.20";
-test_requires "Net::DNS"       => undef;
-test_requires "IO::Socket::INET"   => undef;
+# test_requires "Test::WWW::Mechanize" => "1.20";
+# test_requires "Net::OpenID::Server" => "1.02";
+# test_requires "Net::DNS"       => undef;
+# test_requires "IO::Socket::INET"   => undef;
+
+if ( $Module::Install::AUTHOR )
+{
+    system("pod2text lib/Catalyst/Authentication/Credential/OpenID.pm > README") == 0
+        or die "Couldn't update the README";
+}
 
 auto_install;
 resources repository => 'http://dev.catalyst.perl.org/repos/Catalyst/Catalyst-Authentication-Credential-OpenID/';

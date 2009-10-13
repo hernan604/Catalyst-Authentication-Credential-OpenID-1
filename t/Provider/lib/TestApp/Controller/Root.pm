@@ -105,6 +105,8 @@ sub login : Local {
 sub signin_openid : Local {
     my($self, $c) = @_;
 
+    # eval { $c->authenticate({}, "openid") }; $c->res->body($@); return 1;
+
     if ( $c->authenticate({}, "openid") )
     {
         $c->res->body("You did it with OpenID!");

@@ -1,5 +1,37 @@
 Revision history for Catalyst::Authentication::Credential::OpenID
 
+0.16  Tue Oct 13 07:39:18 PDT 2009
+      - Quick fix to dependencies and Pod to get CPAN testers passing.
+
+0.15  Mon Oct 12 18:18:21 PDT 2009
+      - Patches from Zbigniew Lukasiak to correct inappropriate configuaration settings applied.
+      - Spelling fixes, argument clarification in Pod.
+
+0.14_05 Sat Sep 26 16:17:15 PDT 2009
+      - Moving live-app.t back to on demand and only if everything is
+        there to even try.
+      
+0.14_04 Fri Sep  4 15:00:09 PDT 2009
+      - Just making the live-app.t run for all installs to see if the
+        testers pick up any problems with it.
+
+0.14_03 Sun Aug 23 21:13:33 PDT 2009
+      - Made errors non-fatal to match behavior of other credentials.
+        Provided legacy setting for those who still prefer it.
+      - Note that tickets #46916 and #45006 were fixed a couple
+        releases back.
+
+0.14_02 Sun Aug 23 17:43:46 PDT 2009
+      - Fixed #48952.
+
+0.14_01 Thu Aug 20 21:30:32 PDT 2009
+      - I had an old Test::Pod that didn't catch unsupported L<>
+        usage; CPAN testers found it.
+      - Changed use of LWPx::PA when a ua_class isn't set to test for
+        its successful eval and to use LWP::UserAgent on failure.
+      - Rearranged the extensions and extention_args so there is no
+        duplication necessary in the config.
+
 0.14  Tue Aug 18 22:37:51 PDT 2009
       - Split live tests into two test apps to avoid the need to fork
         to have a self-answering server; crudely done, it's the same

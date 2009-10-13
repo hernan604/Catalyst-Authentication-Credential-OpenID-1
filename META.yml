@@ -3,13 +3,9 @@ abstract: 'OpenID credential for Catalyst::Plugin::Authentication framework.'
 author:
   - 'Ashley Pond V <ashley.org>'
 build_requires:
+  Catalyst::Engine::HTTP: 0
   ExtUtils::MakeMaker: 6.42
-  IO::Socket::INET: 0
-  LWPx::ParanoidAgent: 1.03
-  Net::DNS: 0
-  Net::OpenID::Server: 1.02
   Test::More: 0.42
-  Test::WWW::Mechanize: 1.20
 configure_requires:
   ExtUtils::MakeMaker: 6.42
 distribution_type: module
@@ -37,7 +33,6 @@ requires:
   Catalyst::Plugin::Session::State::Cookie: 0.08
   Catalyst::Plugin::Session::Store::FastMmap: 0.05
   Class::Accessor::Fast: 0
-  Crypt::DH: 0.05
   HTML::Parser: 3
   LWP::UserAgent: 0
   Net::OpenID::Consumer: 1.03
@@ -45,4 +40,4 @@ requires:
 resources:
   license: http://dev.perl.org/licenses/
   repository: http://dev.catalyst.perl.org/repos/Catalyst/Catalyst-Authentication-Credential-OpenID/
-version: 0.14
+version: 0.16

@@ -41,26 +41,27 @@ __PACKAGE__->config
                           }
               },
               openid => {
-                  # ua_class => "LWPx::ParanoidAgent",
-                  ua_class => "LWP::UserAgent",
-                  ua_args => {
-                      whitelisted_hosts => [qw/ 127.0.0.1 localhost /],
-                      timeout => 10,
-                  },
-                  extension_args => [
-                      'http://openid.net/extensions/sreg/1.1',
-                      {
-                       required => 'email',
-                       optional => 'fullname,nickname,timezone',
-                      },
-                  ],
-                  debug => 1,
                   credential => {
                       class => "OpenID",
 #DOES NOTHING                      use_session => 1,
                       store => {
                           class => "OpenID",
                       },
+                      errors_are_fatal => 1,
+                      # ua_class => "LWPx::ParanoidAgent",
+                      ua_class => "LWP::UserAgent",
+                      ua_args => {
+                          whitelisted_hosts => [qw/ 127.0.0.1 localhost /],
+                          timeout => 10,
+                      },
+                      extensions => [
+                          'http://openid.net/extensions/sreg/1.1',
+                          {
+                           required => 'email',
+                           optional => 'fullname,nickname,timezone',
+                          },
+                      ],
+                      debug => 1,
                   },
               },
           },

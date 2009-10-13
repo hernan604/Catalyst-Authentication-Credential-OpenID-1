@@ -41,13 +41,14 @@ __PACKAGE__->config
                           }
               },
               openid => {
+                  errors_are_fatal => 1,
                   #ua_class => "LWPx::ParanoidAgent",
                   ua_class => "LWP::UserAgent",
                   ua_args => {
                       whitelisted_hosts => [qw/ 127.0.0.1 localhost /],
                       timeout => 10,
                   },
-                  extension_args => [
+                  extensions => [
                       'http://openid.net/extensions/sreg/1.1',
                       {
                        required => 'email',
