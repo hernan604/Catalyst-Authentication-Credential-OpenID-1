@@ -2,7 +2,7 @@ use inc::Module::Install 0.87;
 
 name      "Catalyst-Authentication-Credential-OpenID";
 all_from  "lib/Catalyst/Authentication/Credential/OpenID.pm";
-author    "Ashley Pond V <ashley@cpan.org>";
+author    "Ashley Pond V <ashley\@cpan.org>";
 
 requires "parent"        => "0.2";
 requires "Class::Accessor::Fast" => undef;
